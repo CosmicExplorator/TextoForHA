@@ -1,0 +1,7 @@
+configuration:
+  poll_interval:
+    name: Poll interval
+    description: Read modem status every 15 to 300 seconds.
+  import_existing:
+    name: Import existing integrations
+    description: On first startup, reuse known Huawei and Qualcomm integrations without opening their devices.

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <base href="__BASE__"><title>Dongle Link</title>
+  <link rel="stylesheet" href="static/style.css">
+  <script src="static/app.js" type="module"></script>
+</head>
+<body>
+  <main>
+    <header><div><p class="eyebrow">VOS CONNEXIONS, AU MÊME ENDROIT</p><h1>Dongle Link<span class="badge">BÊTA</span></h1></div><button id="add" class="secondary">+ Ajouter une clé</button></header>
+    <section class="device-bar"><label for="modem">Modem sélectionné</label><select id="modem"></select><span id="status" class="status">Chargement…</span><button id="refresh" class="secondary">Actualiser</button></section>
+    <nav aria-label="Vues du modem"><button data-tab="sms" class="active">SMS</button><button data-tab="network">Réseau</button><button data-tab="configuration">Configuration</button><button data-tab="contacts">Contacts</button></nav>
+    <p id="notice" role="status" aria-live="polite"></p>
+    <div id="content"></div>
+    <footer>Dongle Link · 0.1.0 · Connexion locale · Actualisation automatique</footer>
+  </main>
+  <dialog id="editor"><form id="modem-form"><h2 id="editor-title">Ajouter une clé</h2>
+    <label>Identifiant<input name="id" required pattern="[a-z0-9][a-z0-9_-]{0,39}" placeholder="ma-cle"></label>
+    <label>Nom<input name="name" required maxlength="80" placeholder="Clé du salon"></label>
+    <label>Connexion<select name="driver"><option value="huawei">Huawei HiLink — connexion directe</option><option value="serial">Modem AT — port série direct</option><option value="homeassistant">Réutiliser une intégration Home Assistant</option></select></label>
+    <div data-driver="huawei"><label>Adresse du modem<input name="url" type="url" placeholder="http://192.168.8.1/"></label><label>Utilisateur<input name="username" autocomplete="off"></label><label>Mot de passe<input name="password" type="password" autocomplete="new-password"></label><p class="hint" id="password-hint">Laisser vide si le modem ne demande pas de mot de passe.</p></div>
+    <div data-driver="serial"><p class="hint">Le port AT doit être libre : fermer microcom et désactiver toute intégration qui pilote déjà cette même clé.</p><label>Port AT<input name="port" placeholder="/dev/serial/by-id/…-if00-port0"></label><label>Vitesse<select name="baudrate"><option>115200</option><option>57600</option><option>38400</option><option>19200</option><option>9600</option></select></label><label>Mémoire SMS<select name="storage"><option value="SM">SIM (SM)</option><option value="ME">Modem (ME)</option><option value="MT">Combinée (MT)</option></select></label></div>
+    <div data-driver="homeassistant"><p class="hint">Les intégrations installées continuent de gérer les clés. L’add-on utilise leurs capteurs et leurs services.</p><label>Intégration<select name="source"><option value="huawei">Huawei HiLink SMS</option><option value="qualcomm">Qualcomm AT SMS</option></select></label><label>Capteur SMS<input name="inbox" placeholder="sensor.sms_huawei_e3372"></label><label>Préfixe des capteurs réseau<input name="network_prefix" placeholder="local_e3372 ou qualcomm_sms"></label></div>
+    <p id="editor-error" role="alert"></p><div class="actions"><button type="button" id="cancel" class="secondary">Annuler</button><button type="submit">Enregistrer</button></div>
+  </form></dialog>
+</body>
+</html>
