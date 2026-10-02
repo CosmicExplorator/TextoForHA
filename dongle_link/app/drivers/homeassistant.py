@@ -32,6 +32,13 @@ class CoreAPI:
             json=data,
             timeout=(3, 20),
         )
+        if not response.ok:
+            try:
+                message = response.json().get("message", "")
+            except ValueError:
+                message = ""
+            if isinstance(message, str) and 0 < len(message) <= 200:
+                raise DriverError(message)
         response.raise_for_status()
         return response.json()
 

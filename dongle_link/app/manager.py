@@ -196,6 +196,8 @@ class Manager:
                 raise ValueError("La configuration a changé ; actualiser avant de réessayer.")
             try:
                 result = await run_sync(device.driver.action, action, clean)
+            except DriverError:
+                raise
             except Exception:
                 raise DriverError(
                     "Opération refusée ou résultat incertain. Vérifier avant de réessayer."
