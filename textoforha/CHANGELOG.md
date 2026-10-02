@@ -1,8 +1,13 @@
-# 0.1.0
+# Changelog
 
-- Première version bêta de l’add-on autonome avec accès Ingress.
-- Interface commune SMS, réseau, configuration, contacts et SIM.
-- Pilotes directs Huawei HiLink et série AT.
-- Compatibilité avec les intégrations huawei_sms et qualcomm_sms existantes.
-- Sélection explicite du modem, brouillons séparés et opérations sérialisées.
-- Tests des trames AT, de l’API et de l’interface avec modems simulés.
+## 0.1.0 (02/10/2024)
+- Première version publique.
+- Support des modems **Huawei HiLink** (B535, B818, E3372).
+- Support des modems **série AT** (Qualcomm, Wavecom).
+- Interface web pour gérer les SMS (port 8099).
+- Intégration avec l'API Home Assistant.
+- Tests validés sur amd64.
+
+## 0.0.1 (30/09/2024)
+- Version bêta interne.
+- Développement initial.

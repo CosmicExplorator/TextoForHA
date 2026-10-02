@@ -1,0 +1,12 @@
+{
+  "name": "TextoForHA",
+  "description": "Gère les SMS et le réseau de tes modems Huawei HiLink et AT depuis Home Assistant",
+  "url": "https://github.com/CosmicExplorator/TextoForHA",
+  "homeassistant": "2024.10.0",
+  "category": "Utility",
+  "type": "addon",
+  "repository": {
+    "name": "CosmicExplorator/TextoForHA",
+    "type": "github"
+  }
+}
