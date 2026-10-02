@@ -1,0 +1,23 @@
+name: TextoForHA
+version: 0.1.0
+slug: textoforha
+description: SMS, réseau et configuration pour plusieurs modems Huawei HiLink et AT.
+arch:
+  - amd64
+  - aarch64
+startup: application
+boot: manual
+init: false
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:router-wireless
+panel_title: TextoForHA
+homeassistant_api: true
+uart: true
+udev: true
+options:
+  poll_interval: 60
+  import_existing: true
+schema:
+  poll_interval: int(15,300)
+  import_existing: bool

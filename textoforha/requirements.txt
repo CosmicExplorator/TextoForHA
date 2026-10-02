@@ -1,0 +1,5 @@
+aiohttp==3.14.3
+huawei-lte-api==2.0.1
+pyserial==3.5
+python-gsmmodem-new==0.13.0
+requests==2.34.2

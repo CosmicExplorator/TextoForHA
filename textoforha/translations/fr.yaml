@@ -1,0 +1,7 @@
+configuration:
+  poll_interval:
+    name: Intervalle de lecture
+    description: Lecture des modems toutes les 15 à 300 secondes.
+  import_existing:
+    name: Importer les intégrations existantes
+    description: Au premier démarrage, réutiliser les intégrations Huawei et Qualcomm connues sans ouvrir leurs ports.
