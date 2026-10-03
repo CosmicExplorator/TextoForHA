@@ -5,3 +5,9 @@ configuration:
   import_existing:
     name: Import existing integrations
     description: On first startup, reuse known Huawei and Qualcomm integrations without opening their devices.
+  default_modem_id:
+    name: Default modem
+    description: Modem identifier used by automations. Leave empty when there is only one modem.
+  log_level:
+    name: Log level
+    description: Use debug only for temporary diagnostics.

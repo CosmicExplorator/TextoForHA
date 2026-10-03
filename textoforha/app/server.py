@@ -77,7 +77,7 @@ async def index(request):
 
 
 async def list_modems(request):
-    return web.json_response({"modems": request.app[MANAGER].snapshots(), "version": "0.1.0"})
+    return web.json_response({"modems": request.app[MANAGER].snapshots(), "version": "0.1.1"})
 
 
 async def configure(request):
@@ -105,6 +105,12 @@ async def action(request):
     )
 
 
+async def default_action(request):
+    return web.json_response(
+        await request.app[MANAGER].default_action(request.match_info["action"], await request.json())
+    )
+
+
 def create_app(data_dir: Path, *, dev=False, manager=None):
     app = web.Application(middlewares=[access, errors], client_max_size=32 * 1024)
     app[DEV] = dev
@@ -113,7 +119,14 @@ def create_app(data_dir: Path, *, dev=False, manager=None):
         if (data_dir / "options.json").exists()
         else {}
     )
-    app[MANAGER] = manager or Manager(data_dir / "modems.json", options.get("poll_interval", 60))
+    logging.getLogger().setLevel(
+        getattr(logging, str(options.get("log_level", "info")).upper(), logging.INFO)
+    )
+    app[MANAGER] = manager or Manager(
+        data_dir / "modems.json",
+        options.get("poll_interval", 60),
+        default_modem_id=options.get("default_modem_id", ""),
+    )
 
     async def lifecycle(app):
         await app[MANAGER].start(import_existing=options.get("import_existing", True))
@@ -128,6 +141,7 @@ def create_app(data_dir: Path, *, dev=False, manager=None):
     app.router.add_delete("/api/modems/{key}", remove)
     app.router.add_post("/api/modems/{key}/refresh", refresh)
     app.router.add_post("/api/modems/{key}/actions/{action}", action)
+    app.router.add_post("/api/actions/{action}", default_action)
     app.router.add_static("/static/", STATIC)
     return app
 

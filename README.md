@@ -3,8 +3,10 @@
 Add-on Home Assistant avec une interface commune pour plusieurs modems : SMS,
 réseau, configuration, contacts et SIM selon les capacités du matériel.
 
-**Version 0.1.0 bêta.** L’objectif est une diffusion communautaire. La compatibilité
+**Version 0.1.1 bêta.** L’objectif est une diffusion communautaire. La compatibilité
 n’est pas universelle : le mode HiLink et les commandes AT varient selon le firmware.
+
+Pour une installation courte, consulter [Démarrage rapide](QUICKSTART.md).
 
 ## Trois connexions possibles
 

@@ -66,10 +66,11 @@ class Device:
 
 
 class Manager:
-    def __init__(self, path: Path, interval=60, factories=None):
+    def __init__(self, path: Path, interval=60, factories=None, default_modem_id=""):
         self.path = path
         self.interval = interval
         self.factories = factories or FACTORIES
+        self.default_modem_id = default_modem_id
         self.devices: dict[str, Device] = {}
         self.config_lock = asyncio.Lock()
         self.stop_event = asyncio.Event()
@@ -118,6 +119,13 @@ class Manager:
         if key not in self.devices:
             raise KeyError("Modem introuvable.")
         return self.devices[key]
+
+    def default(self):
+        if self.default_modem_id:
+            return self.get(self.default_modem_id)
+        if len(self.devices) == 1:
+            return next(iter(self.devices.values()))
+        raise ValueError("Configurer le modem par défaut dans les options de l’add-on.")
 
     def snapshots(self):
         return [d.public() for d in self.devices.values()]
@@ -207,6 +215,9 @@ class Manager:
             else:
                 await self._poll(device)
             return {"accepted": True, "result": json_safe(result), "modem": device.public()}
+
+    async def default_action(self, action, data):
+        return await self.action(self.default().config["id"], action, data)
 
     async def _poll_loop(self):
         while not self.stop_event.is_set():
