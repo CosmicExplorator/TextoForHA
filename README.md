@@ -63,6 +63,56 @@ Les actions d’envoi et PIN ne sont jamais réessayées par l’application. Ap
 réponse incertaine, vérifier le résultat avant de renouveler l’opération. Une réponse
 positive d’envoi signifie que le modem a accepté le SMS, pas que le destinataire l’a reçu.
 
+## Envoi depuis une automation Home Assistant
+
+Si la clé est gérée par les intégrations existantes, il est préférable d’appeler
+directement leur service, sans passer par l’interface TextoForHA :
+
+```yaml
+action: huawei_sms.send
+data:
+  phone_number: "+33612345678"
+  message: "Alerte : la maison est sans courant."
+```
+
+Pour Qualcomm, appeler `qualcomm_sms.send` avec en plus l’`entry_id` de
+l’intégration. TextoForHA réutilise déjà ces mêmes services lorsque la connexion
+« intégration existante » est choisie.
+
+Pour une clé configurée directement dans TextoForHA (HiLink ou port AT), Home
+Assistant peut appeler l’API interne de l’add-on au moyen d’un `rest_command`.
+Ajouter ceci à `configuration.yaml` en remplaçant `local_textoforha` par le nom
+réseau de l’add-on et `modem_id` par l’identifiant configuré dans TextoForHA :
+
+```yaml
+rest_command:
+  textoforha_send_sms:
+    url: "http://local_textoforha:8099/api/modems/{{ modem_id }}/actions/send"
+    method: POST
+    headers:
+      Content-Type: application/json
+      X-TextoForHA: "1"
+    payload: >-
+      {"phone_number": {{ phone_number | to_json }},
+       "message": {{ message | to_json }}}
+```
+
+Puis, dans une automation :
+
+```yaml
+action: rest_command.textoforha_send_sms
+data:
+  modem_id: modem_at
+  phone_number: "+33612345678"
+  message: "Alerte : la maison est sans courant."
+```
+
+L’API reste limitée au réseau interne de Home Assistant et exige l’en-tête
+`X-TextoForHA`; elle n’est pas destinée à être publiée vers Internet. Tester la
+commande depuis **Outils de développement > Actions** avant de l’employer dans
+une alerte. Avec un modem AT, rester à un SMS simple et court (160 caractères
+GSM7 ou 70 UCS2), sans emoji hors BMP.
+
 ## Limites de la bêta
 
 - AT : un seul segment sortant ; jusqu’à 160 caractères GSM7 (certains comptent

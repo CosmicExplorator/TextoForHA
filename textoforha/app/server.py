@@ -20,9 +20,12 @@ DEV = web.AppKey("dev", bool)
 
 @web.middleware
 async def access(request, handler):
-    allowed = {"127.0.0.1", "::1"} if request.app[DEV] else {"172.30.32.2"}
+    # Home Assistant Core uses .1 on current installations; .2 was used by
+    # earlier Supervisor network layouts. Both addresses remain internal.
+    allowed = {"127.0.0.1", "::1"} if request.app[DEV] else {"172.30.32.1", "172.30.32.2"}
     if request.remote not in allowed:
-        raise web.HTTPForbidden(text="Ingress access only")
+        logging.getLogger(__name__).warning("Rejected non-Ingress request from %s", request.remote)
+        raise web.HTTPForbidden(text=f"Ingress access only (source: {request.remote})")
     if request.method not in {"GET", "HEAD"}:
         if request.headers.get("X-TextoForHA") != "1" or request.content_type != "application/json":
             raise web.HTTPForbidden(text="JSON application requests only")
