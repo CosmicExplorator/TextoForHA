@@ -1,5 +1,5 @@
 FROM python:3.13-alpine3.22
-ARG BUILD_VERSION=0.2.0
+ARG BUILD_VERSION=2026-10.2
 LABEL io.hass.name="TextoForHA" \
       io.hass.description="Multi-modem SMS and network console" \
       io.hass.type="addon" \

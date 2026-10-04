@@ -19,7 +19,7 @@ from .drivers.base import DriverError
 from .manager import Manager
 
 STATIC = Path(__file__).parent / "static"
-VERSION = "0.2.0"
+VERSION = "2026-10.2"
 SECURITY_HEADERS = {
     "Cache-Control": "no-store",
     "X-Content-Type-Options": "nosniff",

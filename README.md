@@ -2,7 +2,7 @@
 
 Add-on Home Assistant pour gérer les SMS et l’état réseau de plusieurs modems.
 
-**Version 0.2.0 bêta.** L’objectif est une diffusion communautaire. La compatibilité
+**Version 2026-10.2 bêta.** L’objectif est une diffusion communautaire. La compatibilité
 n’est pas universelle : le mode HiLink et les commandes AT varient selon le firmware.
 
 Pour une installation courte, consulter [Démarrage rapide](QUICKSTART.md).

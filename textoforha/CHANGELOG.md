@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0
+## 2026-10.2
 
 - Migration du serveur HTTP vers FastAPI et Uvicorn.
 - Conservation des routes existantes et des règles Ingress.
