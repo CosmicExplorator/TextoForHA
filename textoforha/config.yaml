@@ -1,5 +1,5 @@
 name: TextoForHA
-version: 0.1.1
+version: 0.2.0
 slug: textoforha
 description: "Gère les SMS et le réseau de tes modems Huawei HiLink et AT depuis Home Assistant."
 arch:

@@ -1,9 +1,8 @@
 # TextoForHA
 
-Add-on Home Assistant avec une interface commune pour plusieurs modems : SMS,
-réseau, configuration, contacts et SIM selon les capacités du matériel.
+Add-on Home Assistant pour gérer les SMS et l’état réseau de plusieurs modems.
 
-**Version 0.1.1 bêta.** L’objectif est une diffusion communautaire. La compatibilité
+**Version 0.2.0 bêta.** L’objectif est une diffusion communautaire. La compatibilité
 n’est pas universelle : le mode HiLink et les commandes AT varient selon le firmware.
 
 Pour une installation courte, consulter [Démarrage rapide](../QUICKSTART.md).
@@ -35,25 +34,20 @@ créée par les fichiers de ce projet. L’installation construit l’image loca
 
 ## Première utilisation
 
-Au premier démarrage, `import_existing: true` importe les deux capteurs connus
-`sensor.sms_huawei_e3372` et `sensor.qualcomm_sms_sms` s’ils existent. Ces entrées
-utilisent les intégrations existantes : leurs ports et réglages restent gérés par
-Home Assistant. Les noms d’entités personnalisés peuvent être configurés manuellement.
+1. Démarrer l’add-on.
+2. Ouvrir TextoForHA.
+3. Cliquer sur **Ajouter une clé**.
+4. Choisir un mode :
+   - **HiLink** : URL du modem et identifiants éventuels.
+   - **AT** : port `/dev/serial/by-id/...`, vitesse et mémoire SMS.
+   - **Intégration existante** : capteur SMS et préfixe réseau.
+5. Vérifier que le modem est **Disponible**.
 
-Sinon, cliquer sur **Ajouter une clé** :
+Les modems sont enregistrés dans `/data/modems.json`. Ce fichier est privé et inclus
+dans les sauvegardes. Un mot de passe vide conserve le mot de passe déjà enregistré.
 
-- HiLink : adresse du modem et identifiants éventuels ;
-- AT : chemin `/dev/serial/by-id/...` du port AT, vitesse et mémoire SMS ;
-- intégration existante : type, capteur SMS et préfixe des capteurs réseau.
-
-Les clés sont configurées dans l’application et persistées dans `/data/modems.json`.
-Ce fichier est privé (0600) et inclus dans les sauvegardes de l’add-on. Le mot de passe
-reste côté serveur ; un champ vide lors d’une modification conserve la valeur actuelle.
-
-**Un seul logiciel doit piloter un port AT.** Pour passer d’une intégration existante
-à une connexion série directe, désactiver d’abord l’intégration correspondante et
-fermer microcom. Ne jamais sélectionner un dongle Zigbee/Z-Wave comme port AT.
-TextoForHA ne scanne pas les ports pour y envoyer des commandes.
+> Un seul logiciel doit utiliser un port AT. Désactiver toute autre intégration qui
+> utilise ce port. Ne jamais choisir un dongle Zigbee ou Z-Wave.
 
 ## Options de l’add-on
 
@@ -65,55 +59,15 @@ Les actions d’envoi et PIN ne sont jamais réessayées par l’application. Ap
 réponse incertaine, vérifier le résultat avant de renouveler l’opération. Une réponse
 positive d’envoi signifie que le modem a accepté le SMS, pas que le destinataire l’a reçu.
 
-## Envoi depuis une automation Home Assistant
+## Automatisations
 
-Si la clé est gérée par les intégrations existantes, il est préférable d’appeler
-directement leur service, sans passer par l’interface TextoForHA :
+1. Définir le **Modem par défaut** dans les options de l’add-on.
+2. Appeler `POST /api/actions/send` depuis Home Assistant.
+3. Envoyer `phone_number` et `message` en JSON.
+4. Tester l’envoi avant d’activer une alerte.
 
-```yaml
-action: huawei_sms.send
-data:
-  phone_number: "+33612345678"
-  message: "Alerte : la maison est sans courant."
-```
-
-Pour Qualcomm, appeler `qualcomm_sms.send` avec en plus l’`entry_id` de
-l’intégration. TextoForHA réutilise déjà ces mêmes services lorsque la connexion
-« intégration existante » est choisie.
-
-Pour une clé configurée directement dans TextoForHA (HiLink ou port AT), Home
-Assistant peut appeler l’API interne de l’add-on au moyen d’un `rest_command`.
-Ajouter ceci à `configuration.yaml` en remplaçant `local_textoforha` par le nom
-réseau de l’add-on et `modem_id` par l’identifiant configuré dans TextoForHA :
-
-```yaml
-rest_command:
-  textoforha_send_sms:
-    url: "http://local_textoforha:8099/api/modems/{{ modem_id }}/actions/send"
-    method: POST
-    headers:
-      Content-Type: application/json
-      X-TextoForHA: "1"
-    payload: >-
-      {"phone_number": {{ phone_number | to_json }},
-       "message": {{ message | to_json }}}
-```
-
-Puis, dans une automation :
-
-```yaml
-action: rest_command.textoforha_send_sms
-data:
-  modem_id: modem_at
-  phone_number: "+33612345678"
-  message: "Alerte : la maison est sans courant."
-```
-
-L’API reste limitée au réseau interne de Home Assistant et exige l’en-tête
-`X-TextoForHA`; elle n’est pas destinée à être publiée vers Internet. Tester la
-commande depuis **Outils de développement > Actions** avant de l’employer dans
-une alerte. Avec un modem AT, rester à un SMS simple et court (160 caractères
-GSM7 ou 70 UCS2), sans emoji hors BMP.
+L’API reste sur le réseau interne Home Assistant. Ne pas publier son port sur Internet.
+Avec un modem AT, rester sous 160 caractères GSM ou 70 caractères Unicode.
 
 ## Limites de la bêta
 
@@ -134,7 +88,7 @@ GSM7 ou 70 UCS2), sans emoji hors BMP.
 
 ```sh
 python -m venv .venv
-.venv/bin/pip install -r textoforha/requirements.txt pytest ruff playwright
+.venv/bin/pip install -r textoforha/requirements.txt pytest httpx2 ruff playwright
 .venv/bin/pytest -q
 .venv/bin/ruff check .
 cd textoforha

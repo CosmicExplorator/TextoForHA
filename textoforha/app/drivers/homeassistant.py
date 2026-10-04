@@ -108,7 +108,11 @@ class HomeAssistantDriver:
         if action in {"delete", "contact_delete"}:
             payload["message_id" if action == "delete" else "contact_id"] = payload.pop("id")
         timeout = (3, 90) if action == "send" else (3, 20)
-        service = action if source == "qualcomm" and action.startswith("pin_") else SERVICE_NAMES.get(action, action)
+        service = (
+            action
+            if source == "qualcomm" and action.startswith("pin_")
+            else SERVICE_NAMES.get(action, action)
+        )
         response = self.api.request(
             "POST",
             f"services/{domain}/{service}" + ("?return_response" if action == "pin_status" else ""),

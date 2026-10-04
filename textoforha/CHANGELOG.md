@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0
+
+- Migration du serveur HTTP vers FastAPI et Uvicorn.
+- Conservation des routes existantes et des règles Ingress.
+- Tests HTTP migrés vers le client FastAPI.
+
 ## 0.1.1
 
 - Added a default modem option for automations.

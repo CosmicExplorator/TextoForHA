@@ -1,4 +1,4 @@
-"""Exercise real HTTP handlers, persistence and device isolation with fake hardware."""
+"""Vérifie les routes HTTP, la persistance et l’isolation avec du matériel simulé."""
 
 import asyncio
 import json
@@ -6,12 +6,12 @@ import os
 import threading
 
 import pytest
-from aiohttp.test_utils import TestClient, TestServer
 from app import config
 from app.drivers.base import SMS, DriverError
 from app.drivers.homeassistant import HomeAssistantDriver
 from app.manager import Manager
 from app.server import create_app
+from fastapi.testclient import TestClient
 
 
 class FakeDriver:
@@ -172,7 +172,7 @@ def test_bridge_requires_actual_entry_id_and_ignores_callers_target(monkeypatch)
     driver = HomeAssistantDriver({"source": "qualcomm", "inbox": "sensor.test"})
     sent = []
     monkeypatch.setattr(driver.api, "state", lambda _: {"attributes": {"entry_id": "correct"}})
-    monkeypatch.setattr(driver.api, "request", lambda *args: sent.append(args) or {})
+    monkeypatch.setattr(driver.api, "request", lambda *args, **kwargs: sent.append(args) or {})
     driver.action("delete", {"id": 7, "entry_id": "wrong"})
     assert sent[0][2] == {"entry_id": "correct", "message_id": 7}
     monkeypatch.setattr(driver.api, "state", lambda _: {"attributes": {}})
@@ -182,38 +182,36 @@ def test_bridge_requires_actual_entry_id_and_ignores_callers_target(monkeypatch)
 
 
 def test_real_http_routes_and_ingress_restrictions(tmp_path):
-    async def run():
-        (tmp_path / "options.json").write_text('{"import_existing": false}')
-        manager = Manager(tmp_path / "modems.json", factories={"huawei": FakeDriver})
-        app = create_app(tmp_path, dev=True, manager=manager)
-        async with TestClient(TestServer(app)) as client:
-            assert (await client.get("/")).status == 200
-            assert (await client.post("/api/modems", json=settings())).status == 403
-            headers = {"X-TextoForHA": "1"}
-            response = await client.post("/api/modems", json=settings(), headers=headers)
-            assert response.status == 200
-            assert "secret-password" not in await response.text()
-            response = await client.post("/api/modems/one/refresh", json={}, headers=headers)
-            assert response.status == 200
-            response = await client.get("/api/modems")
-            body = await response.json()
-            assert body["modems"][0]["messages"][0]["content"] == "Bonjour 😀"
-            assert "password" not in body["modems"][0]["config"]
-            assert (
-                await client.post("/api/modems/one/actions/pin_disable", json={}, headers=headers)
-            ).status == 400
-            assert (
-                await client.post(
-                    "/api/modems/missing/actions/delete", json={"id": 1}, headers=headers
-                )
-            ).status == 404
-            assert not FakeDriver.calls
-        restricted = create_app(
-            tmp_path,
-            dev=False,
-            manager=Manager(tmp_path / "modems.json", factories={"huawei": FakeDriver}),
+    (tmp_path / "options.json").write_text('{"import_existing": false}')
+    manager = Manager(tmp_path / "modems.json", factories={"huawei": FakeDriver})
+    app = create_app(tmp_path, dev=True, manager=manager)
+    with TestClient(app, client=("127.0.0.1", 8080)) as client:
+        assert client.get("/").status_code == 200
+        assert client.post("/api/modems", json=settings()).status_code == 403
+        headers = {"X-TextoForHA": "1"}
+        response = client.post("/api/modems", json=settings(), headers=headers)
+        assert response.status_code == 200
+        assert "secret-password" not in response.text
+        response = client.post("/api/modems/one/refresh", json={}, headers=headers)
+        assert response.status_code == 200
+        body = client.get("/api/modems").json()
+        assert body["modems"][0]["messages"][0]["content"] == "Bonjour 😀"
+        assert "password" not in body["modems"][0]["config"]
+        assert (
+            client.post("/api/modems/one/actions/pin_disable", json={}, headers=headers).status_code
+            == 400
         )
-        async with TestClient(TestServer(restricted)) as client:
-            assert (await client.get("/")).status == 403
-
-    asyncio.run(run())
+        assert (
+            client.post(
+                "/api/modems/missing/actions/delete", json={"id": 1}, headers=headers
+            ).status_code
+            == 404
+        )
+        assert not FakeDriver.calls
+    restricted = create_app(
+        tmp_path,
+        dev=False,
+        manager=Manager(tmp_path / "modems.json", factories={"huawei": FakeDriver}),
+    )
+    with TestClient(restricted, client=("192.0.2.1", 8080)) as client:
+        assert client.get("/").status_code == 403
